@@ -1,5 +1,5 @@
 import Queue from './Queue'
-import * as Base58 from 'bs58'
+//import * as Base58 from 'bs58'
 import hypercore, { Feed } from 'hypercore'
 import { readFeed } from './hypercore'
 import Debug from './Debug'
@@ -63,7 +63,7 @@ function isFileBlock(block: MetadataBlock): block is FileBlock {
 // are try catchs as expensive as I remember?  Not sure - I wrote this logic twice
 export function isValidID(id: Keys.PublicId): id is Keys.PublicId {
   try {
-    const buffer = Base58.decode(id)
+    const buffer = Buffer.from(id,'hex') // why isnt this just Keys.decode() -- FIXME
     return buffer.length === 32
   } catch (e) {
     return false

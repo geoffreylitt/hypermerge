@@ -1,4 +1,4 @@
-import { Patch, Change } from 'automerge'
+import { Patch, Change, Request } from 'automerge'
 import { PublicMetadata } from './Metadata'
 import { DocId, HyperfileId, ActorId } from './Misc'
 import { PublicId, SecretId } from './Keys'
@@ -240,7 +240,7 @@ export interface NeedsActorIdMsg {
 export interface RequestMsg {
   type: 'RequestMsg'
   id: DocId
-  request: Change
+  request: Request
 }
 
 export type ToFrontendRepoMsg =

@@ -1,10 +1,11 @@
-import { Frontend, Patch, Doc, Change, ChangeFn } from 'automerge'
+import { Frontend, Patch, Doc, Request, ChangeFn, Hash } from 'automerge'
 import { RepoFrontend, ProgressEvent } from './RepoFrontend'
 import { Clock, union } from './Clock'
 import Queue from './Queue'
 import { Handle } from './Handle'
 import Debug from './Debug'
 import { ActorId, DocId, DocUrl, toDocUrl } from './Misc'
+import { decode } from './Keys'
 
 // TODO - i bet this can be rewritten where the Frontend allocates the actorid on write - this
 // would make first writes a few ms faster
@@ -34,6 +35,7 @@ export class DocFrontend<T> {
   private repo: RepoFrontend
 
   clock: Clock
+  deps: Hash[]
 
   constructor(repo: RepoFrontend, config: Config) {
     //super()
@@ -42,13 +44,14 @@ export class DocFrontend<T> {
     const actorId = config.actorId
     this.repo = repo
     this.clock = {}
+    this.deps = []
     this.docId = docId
     this.docUrl = toDocUrl(docId)
 
     //    this.toBackend = toBackend
 
     if (actorId) {
-      this.front = Frontend.init(actorId) as Doc<T>
+      this.front = Frontend.init(decode(actorId).toString('hex')) as Doc<T>
       this.actorId = actorId
       this.ready = true
       this.mode = 'write'
@@ -110,7 +113,7 @@ export class DocFrontend<T> {
   setActorId = (actorId: ActorId) => {
     log('setActorId', this.docId, actorId, this.mode)
     this.actorId = actorId
-    this.front = Frontend.setActorId(this.front, actorId)
+    this.front = Frontend.setActorId(this.front, decode(actorId).toString('hex'))
 
     if (this.mode === 'read') {
       this.mode = 'write'
@@ -136,7 +139,7 @@ export class DocFrontend<T> {
     this.changeQ.subscribe((fn) => {
       const [doc, request] = Frontend.change(this.front, fn)
       this.front = doc
-      log(`change complete doc=${this.docId} seq=${request ? request.seq : 'null'}`)
+      log(`change-request complete doc=${this.docId} seq=${request ? request.seq : 'null'}`)
       if (request) {
         this.updateClockChange(request)
         this.newState()
@@ -149,14 +152,14 @@ export class DocFrontend<T> {
     })
   }
 
-  private updateClockChange(change: Change) {
-    const oldSeq = this.clock[change.actor] || 0
-    this.clock[change.actor] = Math.max(change.seq, oldSeq)
+  private updateClockChange(request: Request) {
+    const oldSeq = this.clock[request.actor] || 0
+    this.clock[request.actor] = Math.max(request.seq, oldSeq)
   }
 
   private updateClockPatch(patch: Patch) {
-    if (patch.clock) this.clock = union(this.clock, patch.clock) // dont know which is better - use both??...
-    if (patch.deps) this.clock = union(this.clock, patch.deps)
+    if (patch.clock) this.clock = union(this.clock, patch.clock)
+    if (patch.deps) this.deps = patch.deps
   }
 
   patch = (patch: Patch, minimumClockSatisfied: boolean, history: number) => {
@@ -164,7 +167,8 @@ export class DocFrontend<T> {
       this.history = history
       this.front = Frontend.applyPatch(this.front, patch)
       this.updateClockPatch(patch)
-      if (patch.diffs.length > 0 && minimumClockSatisfied) {
+      const emptyPatch = Object.keys(patch.diffs).length === 0;
+      if (!emptyPatch && minimumClockSatisfied) {
         if (this.mode === 'pending') {
           this.mode = 'read'
           if (this.actorId) {

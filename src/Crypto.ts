@@ -1,5 +1,5 @@
 import sodium from 'sodium-native'
-import * as Base58 from 'bs58'
+//import * as Base58 from 'bs58'
 
 export type EncodedPublicKey = string & { __encodedPublicKey: true }
 export type EncodedSecretKey = string & { __encodedSecretKey: true }
@@ -151,7 +151,8 @@ export function encode(val: sodium.BoxCiphertext): EncodedBoxCiphertext
 export function encode(val: sodium.BoxNonce): EncodedBoxNonce
 export function encode(val: Buffer): string
 export function encode(val: Buffer): string {
-  return Base58.encode(val)
+  //return Base58.encode(val)
+  return val.toString('hex')
 }
 
 export function decode(val: EncodedPublicSigningKey): sodium.PublicSigningKey
@@ -164,7 +165,8 @@ export function decode(val: EncodedBoxCiphertext): sodium.BoxCiphertext
 export function decode(val: EncodedBoxNonce): sodium.BoxNonce
 export function decode(val: string): Buffer
 export function decode(val: string): Buffer {
-  return Base58.decode(val)
+  //return Base58.decode(val)
+  return Buffer.from(val,'hex')
 }
 
 export function decodePair(pair: EncodedEncryptionKeyPair): sodium.EncryptionKeyPair
@@ -172,8 +174,10 @@ export function decodePair(pair: EncodedSigningKeyPair): sodium.SigningKeyPair
 export function decodePair(pair: EncodedKeyPair): sodium.KeyPair
 export function decodePair(pair: EncodedKeyPair): sodium.KeyPair {
   return {
-    publicKey: Base58.decode(pair.publicKey),
-    secretKey: Base58.decode(pair.secretKey),
+    //publicKey: Base58.decode(pair.publicKey),
+    //secretKey: Base58.decode(pair.secretKey),
+    publicKey: Buffer.from(pair.publicKey,'hex'),
+    secretKey: Buffer.from(pair.secretKey,'hex'),
   } as sodium.KeyPair
 }
 
@@ -182,7 +186,9 @@ export function encodePair(pair: sodium.SigningKeyPair): EncodedSigningKeyPair
 export function encodePair(pair: sodium.KeyPair): EncodedKeyPair
 export function encodePair(pair: sodium.KeyPair): EncodedKeyPair {
   return {
-    publicKey: Base58.encode(pair.publicKey),
-    secretKey: Base58.encode(pair.secretKey),
+    //publicKey: Base58.encode(pair.publicKey),
+    //secretKey: Base58.encode(pair.secretKey),
+    publicKey: pair.publicKey.toString('hex'),
+    secretKey: pair.secretKey.toString('hex'),
   } as EncodedKeyPair
 }

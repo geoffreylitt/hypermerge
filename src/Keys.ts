@@ -1,4 +1,4 @@
-import * as Base58 from 'bs58'
+//import * as Base58 from 'bs58'
 import * as crypto from 'hypercore-crypto'
 import { Key, PublicKey, SecretKey, DiscoveryKey, discoveryKey } from 'hypercore-crypto'
 import * as Crypto from './Crypto'
@@ -49,7 +49,8 @@ export function decode(key: SecretId): SecretKey
 export function decode(key: PublicId): PublicKey
 export function decode(key: KeyId): Key
 export function decode(key: string): Buffer {
-  return Base58.decode(key)
+  //return Base58.decode(key)
+  return Buffer.from(key,'hex')
 }
 
 export function encode(key: DiscoveryKey): DiscoveryId
@@ -57,5 +58,6 @@ export function encode(key: SecretKey): SecretId
 export function encode(key: PublicKey): PublicId
 export function encode(key: Key): KeyId
 export function encode(key: Buffer): string {
-  return Base58.encode(key)
+  //return Base58.encode(key)
+  return key.toString('hex')
 }

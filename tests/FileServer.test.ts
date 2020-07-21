@@ -38,7 +38,7 @@ test('FileServer', (t) => {
   t.test('invalid URL responds with 404', async (t) => {
     t.plan(1)
 
-    const fakeUrl = '3HDZs55bKCu3ULKy7KqSMceG3mzhefSujEM3v8va26eN' as HyperfileUrl
+    const fakeUrl = '21dee03b7480e7e20bd035e912eb51c5c4209f6a4ce885d442bf2a304bc093c3' as HyperfileUrl
 
     try {
       await repoA.files.read(fakeUrl)
@@ -50,7 +50,7 @@ test('FileServer', (t) => {
   t.test('short timeout causes socket hang-up', async (t) => {
     t.plan(1)
 
-    const fakeUrl = 'hyperfile:/3HDZs55bKCu3ULKy7KqSMceG3mzhefSujEM3v8va26eN' as HyperfileUrl
+    const fakeUrl = 'hyperfile:/21dee03b7480e7e20bd035e912eb51c5c4209f6a4ce885d442bf2a304bc093c3' as HyperfileUrl
     ;(repoA.back as any).fileServer.http.setTimeout(100)
 
     try {
